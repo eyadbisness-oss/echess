@@ -1,0 +1,377 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public player profile, board customization, and Glicko-2 ratings (no PII).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "username": { "type": "string", "minLength": 2, "maxLength": 32, "pattern": "^[a-zA-Z0-9_\\.\\-]+$" },
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "avatarUrl": { "type": "string", "maxLength": 512 },
+        "country": { "type": "string", "minLength": 2, "maxLength": 3 },
+        "bio": { "type": "string", "maxLength": 300 },
+        "role": { "type": "string", "enum": ["user", "moderator", "owner"] },
+        "status": { "type": "string", "enum": ["active", "suspended", "banned"] },
+        "membership": { "type": "string", "enum": ["free", "plus", "diamond"] },
+        "boardTheme": { "type": "string", "maxLength": 40 },
+        "pieceStyle": { "type": "string", "enum": ["neo", "classic", "minimal", "imperial"] },
+        "soundEnabled": { "type": "boolean" },
+        "soundVolume": { "type": "number" },
+        "showCoordinates": { "type": "boolean" },
+        "autoQueen": { "type": "boolean" },
+        "lowTimeWarningColor": { "type": "string", "minLength": 7, "maxLength": 7, "pattern": "^#[0-9a-fA-F]{6}$" },
+        "language": { "type": "string", "enum": ["en", "es", "fr", "ar"] },
+        "ratings": { "type": "object" },
+        "rd": { "type": "object" },
+        "volatility": { "type": "object" },
+        "puzzleStreak": { "type": "number" },
+        "bestPuzzleStreak": { "type": "number" },
+        "dailyStreak": { "type": "number" },
+        "bestDailyStreak": { "type": "number" },
+        "lastDailyPuzzleDate": { "type": "string", "maxLength": 10, "pattern": "^([0-9]{4}-[0-9]{2}-[0-9]{2})?$" },
+        "dailyPuzzlesCompleted": { "type": "number" },
+        "puzzlesSolved": { "type": "number" },
+        "playStreakDays": { "type": "number" },
+        "bestPlayStreakDays": { "type": "number" },
+        "lastPlayDate": { "type": "string", "maxLength": 10, "pattern": "^([0-9]{4}-[0-9]{2}-[0-9]{2})?$" },
+        "gamesPlayed": { "type": "number" },
+        "wins": { "type": "number" },
+        "losses": { "type": "number" },
+        "draws": { "type": "number" },
+        "achievements": { "type": "array" },
+        "isTestAccount": { "type": "boolean" },
+        "onlineStatus": { "type": "string", "enum": ["online", "playing", "offline"] },
+        "lastSeenAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "uid",
+        "username",
+        "displayName",
+        "role",
+        "status",
+        "membership",
+        "boardTheme",
+        "pieceStyle",
+        "ratings",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserPrivateInfo": {
+      "title": "UserPrivateInfo",
+      "description": "Isolated PII document for user email and private metadata.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "maxLength": 254 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "createdAt", "updatedAt"]
+    },
+    "AdminRole": {
+      "title": "AdminRole",
+      "description": "Server-verified owner/admin access marker.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 254 },
+        "role": { "type": "string", "enum": ["owner"] },
+        "grantedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "grantedAt"]
+    },
+    "ChessGame": {
+      "title": "ChessGame",
+      "description": "Completed chess match record with PGN, FEN, opening, ratings, and optional engine review summary.",
+      "type": "object",
+      "properties": {
+        "whiteId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "blackId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "whiteName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "blackName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "whiteRating": { "type": "number" },
+        "blackRating": { "type": "number" },
+        "whiteRatingDelta": { "type": "number" },
+        "blackRatingDelta": { "type": "number" },
+        "timeControl": { "type": "string", "maxLength": 24 },
+        "category": { "type": "string", "enum": ["bullet", "blitz", "rapid", "classical", "bot", "sandbox"] },
+        "result": { "type": "string", "enum": ["1-0", "0-1", "1/2-1/2"] },
+        "termination": { "type": "string", "maxLength": 40 },
+        "winnerId": { "type": "string", "maxLength": 128 },
+        "pgn": { "type": "string", "maxLength": 30000 },
+        "finalFen": { "type": "string", "maxLength": 150 },
+        "openingName": { "type": "string", "maxLength": 120 },
+        "eco": { "type": "string", "maxLength": 12 },
+        "moveCount": { "type": "number" },
+        "rated": { "type": "boolean" },
+        "isTestGame": { "type": "boolean" },
+        "reviewSummary": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "endedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "whiteId",
+        "blackId",
+        "whiteName",
+        "blackName",
+        "timeControl",
+        "category",
+        "result",
+        "termination",
+        "pgn",
+        "finalFen",
+        "rated",
+        "createdAt",
+        "endedAt"
+      ]
+    },
+    "Friendship": {
+      "title": "Friendship",
+      "description": "Friend request, accepted connection, follow, or block relationship.",
+      "type": "object",
+      "properties": {
+        "requesterId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "recipientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "requesterName": { "type": "string", "maxLength": 64 },
+        "recipientName": { "type": "string", "maxLength": 64 },
+        "users": { "type": "array" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "blocked"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["requesterId", "recipientId", "users", "status", "createdAt", "updatedAt"]
+    },
+    "Challenge": {
+      "title": "Challenge",
+      "description": "Direct game invitation between players.",
+      "type": "object",
+      "properties": {
+        "challengerId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "challengerName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "challengerRating": { "type": "number" },
+        "targetId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "targetName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "timeControl": { "type": "string", "maxLength": 24 },
+        "category": { "type": "string", "enum": ["bullet", "blitz", "rapid", "classical"] },
+        "colorPreference": { "type": "string", "enum": ["white", "black", "random"] },
+        "rated": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "declined", "cancelled", "expired"] },
+        "gameId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["challengerId", "challengerName", "targetId", "targetName", "timeControl", "category", "rated", "status", "createdAt", "updatedAt"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notification item.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "type": { "type": "string", "enum": ["friend_request", "challenge", "game_result", "announcement", "system"] },
+        "title": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "message": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "read": { "type": "boolean" },
+        "actionRoute": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "type", "title", "message", "read", "createdAt"]
+    },
+    "Report": {
+      "title": "Report",
+      "description": "Moderation report submitted by a player.",
+      "type": "object",
+      "properties": {
+        "reporterId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "reportedUserId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "gameId": { "type": "string", "maxLength": 128 },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "details": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["open", "resolved", "dismissed"] },
+        "resolutionNote": { "type": "string", "maxLength": 300 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reporterId", "reportedUserId", "reason", "status", "createdAt", "updatedAt"]
+    },
+    "PlatformConfig": {
+      "title": "PlatformConfig",
+      "description": "Platform-wide configuration managed by the Owner.",
+      "type": "object",
+      "properties": {
+        "maintenanceMode": { "type": "boolean" },
+        "maintenanceMessage": { "type": "string", "maxLength": 300 },
+        "announcement": { "type": "string", "maxLength": 300 },
+        "features": { "type": "object" },
+        "activeTimeControls": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["maintenanceMode", "features", "updatedAt", "updatedBy"]
+    },
+    "CustomPuzzle": {
+      "title": "CustomPuzzle",
+      "description": "Owner-curated tactical chess puzzle.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "fen": { "type": "string", "minLength": 10, "maxLength": 150 },
+        "moves": { "type": "array" },
+        "rating": { "type": "number" },
+        "theme": { "type": "string", "maxLength": 50 },
+        "published": { "type": "boolean" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "fen", "moves", "rating", "theme", "published", "createdBy", "createdAt"]
+    },
+    "CustomLesson": {
+      "title": "CustomLesson",
+      "description": "Owner-curated interactive chess lesson.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "category": { "type": "string", "enum": ["opening", "middlegame", "endgame", "checkmate"] },
+        "summary": { "type": "string", "maxLength": 300 },
+        "fen": { "type": "string", "maxLength": 150 },
+        "solutionMoves": { "type": "array" },
+        "published": { "type": "boolean" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "summary", "fen", "solutionMoves", "published", "createdBy", "createdAt"]
+    },
+    "Tournament": {
+      "title": "Tournament",
+      "description": "Platform tournament managed by the Owner.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "timeControl": { "type": "string", "maxLength": 24 },
+        "format": { "type": "string", "enum": ["swiss", "arena", "knockout"] },
+        "status": { "type": "string", "enum": ["upcoming", "active", "completed"] },
+        "published": { "type": "boolean" },
+        "maxPlayers": { "type": "number" },
+        "registeredCount": { "type": "number" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "timeControl", "format", "status", "published", "createdBy", "createdAt"]
+    },
+    "OwnerAuditLog": {
+      "title": "OwnerAuditLog",
+      "description": "Immutable log of sensitive Owner actions.",
+      "type": "object",
+      "properties": {
+        "actorUid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "actorEmail": { "type": "string", "maxLength": 254 },
+        "action": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["actorUid", "actorEmail", "action", "details", "createdAt"]
+    },
+    "OwnerTestAccount": {
+      "title": "OwnerTestAccount",
+      "description": "Owner sandbox test account isolated from production users.",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "username": { "type": "string", "minLength": 2, "maxLength": 32 },
+        "ratings": { "type": "object" },
+        "membership": { "type": "string", "enum": ["free", "plus", "diamond"] },
+        "isTestAccount": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["displayName", "username", "ratings", "membership", "isTestAccount", "createdAt"]
+    },
+    "SharedGame": {
+      "title": "SharedGame",
+      "description": "Publicly shareable chess game PGN and optional Stockfish analysis report accessible via unique share URL.",
+      "type": "object",
+      "properties": {
+        "shareId": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "creatorUid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "creatorName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "whiteName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "blackName": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "result": { "type": "string", "maxLength": 16 },
+        "timeControl": { "type": "string", "maxLength": 24 },
+        "openingName": { "type": "string", "maxLength": 120 },
+        "eco": { "type": "string", "maxLength": 12 },
+        "pgn": { "type": "string", "minLength": 1, "maxLength": 30000 },
+        "hasReviewReport": { "type": "boolean" },
+        "reviewReport": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["shareId", "creatorUid", "creatorName", "whiteName", "blackName", "pgn", "hasReviewReport", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Public player profile, board customization, and Glicko-2 ratings."
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/UserPrivateInfo" },
+      "description": "Isolated PII subcollection readable only by account owner or platform owner."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRole" },
+      "description": "Platform owner authorization markers."
+    },
+    "/games/{gameId}": {
+      "schema": { "$ref": "#/entities/ChessGame" },
+      "description": "Completed chess games with PGN, ratings, and review summary."
+    },
+    "/friendships/{friendshipId}": {
+      "schema": { "$ref": "#/entities/Friendship" },
+      "description": "Friendships and block lists between players."
+    },
+    "/challenges/{challengeId}": {
+      "schema": { "$ref": "#/entities/Challenge" },
+      "description": "Direct game invitations between players."
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "User notifications."
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/Report" },
+      "description": "Player abuse and cheating reports."
+    },
+    "/platformConfig/{docId}": {
+      "schema": { "$ref": "#/entities/PlatformConfig" },
+      "description": "Global platform configuration and feature flags."
+    },
+    "/customPuzzles/{puzzleId}": {
+      "schema": { "$ref": "#/entities/CustomPuzzle" },
+      "description": "Owner-curated puzzles."
+    },
+    "/customLessons/{lessonId}": {
+      "schema": { "$ref": "#/entities/CustomLesson" },
+      "description": "Owner-curated lessons."
+    },
+    "/tournaments/{tournamentId}": {
+      "schema": { "$ref": "#/entities/Tournament" },
+      "description": "Platform tournaments."
+    },
+    "/ownerAuditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/OwnerAuditLog" },
+      "description": "Immutable owner audit logs."
+    },
+    "/ownerTestAccounts/{testId}": {
+      "schema": { "$ref": "#/entities/OwnerTestAccount" },
+      "description": "Owner testing sandbox accounts."
+    },
+    "/sharedGames/{shareId}": {
+      "schema": { "$ref": "#/entities/SharedGame" },
+      "description": "Publicly shareable game PGN and Stockfish review report snapshots."
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">echess</string>
+    <string name="title_activity_main">echess</string>
+    <string name="package_name">com.echess.app</string>
+    <string name="custom_url_scheme">com.echess.app</string>
+</resources>
