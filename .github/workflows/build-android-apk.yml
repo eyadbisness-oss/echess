@@ -15,6 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -29,11 +32,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Install dependencies and sync Capacitor Android
-        run: |
-          npm install --legacy-peer-deps
-          npm run build
-          npx cap sync android
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build web bundle
+        run: bun run build
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
 
       - name: Accept Android SDK licenses
         run: |
