@@ -292,6 +292,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } else {
           console.error('Auth bootstrap warning:', err);
+          setFirebaseUser(null);
+          setProfile(null);
+          setOwnerVerifiedServer(false);
+          setAuthError(`Sign-in verification failed: ${msg}`);
         }
       } finally {
         setIsAuthReady(true);
@@ -389,17 +393,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         let result;
         try {
           result = await FirebaseAuthentication.signInWithGoogle({
-            useCredentialManager: true,
+            useCredentialManager: false,
           });
-        } catch (credErr) {
-          const credMsg = credErr instanceof Error ? credErr.message : String(credErr);
-          const lower = credMsg.toLowerCase();
-          if (lower.includes('cancel') || lower.includes('12501')) {
+        } catch (legacyErr) {
+          const legacyMsg = legacyErr instanceof Error ? legacyErr.message : String(legacyErr);
+          const lower = legacyMsg.toLowerCase();
+          if (lower.includes('12501')) {
             return;
           }
-          // Fallback to legacy GoogleSignIn intent if Credential Manager fails
+          // Fallback to Android Credential Manager if legacy GoogleSignIn fails
           result = await FirebaseAuthentication.signInWithGoogle({
-            useCredentialManager: false,
+            useCredentialManager: true,
           });
         }
         const idToken = result?.credential?.idToken;
@@ -407,20 +411,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           throw new Error('Google Sign-In did not return an ID token.');
         }
         const credential = GoogleAuthProvider.credential(idToken);
-        await signInWithCredential(auth, credential);
+        const userCred = await signInWithCredential(auth, credential);
+        await userCred.user.getIdToken(true);
+        setFirebaseUser(userCred.user);
         return;
       }
 
-      await signInWithPopup(auth, googleProvider);
+      const popupCred = await signInWithPopup(auth, googleProvider);
+      await popupCred.user.getIdToken(true);
+      setFirebaseUser(popupCred.user);
     } catch (err) {
       const rawMsg = err instanceof Error ? err.message : String(err);
       const lower = rawMsg.toLowerCase();
-      if (
-        lower.includes('popup-closed-by-user') ||
-        lower.includes('cancelled-popup-request') ||
-        lower.includes('cancel') ||
-        lower.includes('12501')
-      ) {
+      const isExplicitCancel =
+        (lower.includes('popup-closed-by-user') ||
+          lower.includes('cancelled-popup-request') ||
+          lower.includes('12501') ||
+          lower.includes('activity is cancelled by the user') ||
+          lower.includes('user canceled') ||
+          lower.includes('user cancelled')) &&
+        !lower.includes('blocked') &&
+        !lower.includes('too many');
+      if (isExplicitCancel) {
         return;
       }
       if (
