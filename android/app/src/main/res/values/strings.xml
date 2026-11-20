@@ -4,4 +4,5 @@
     <string name="title_activity_main">echess</string>
     <string name="package_name">com.echess.app</string>
     <string name="custom_url_scheme">com.echess.app</string>
+    <string name="default_web_client_id" translatable="false">783839710213-0auukl0uqqnci1n1bkt6toudmj58kib2.apps.googleusercontent.com</string>
 </resources>

@@ -38,6 +38,7 @@ const EN_TRANSLATIONS = {
   'app.openProfileTitle': 'Open My Profile & Rating History',
   'app.signInGoogle': 'Sign In with Google',
   'app.signIn': 'Sign In',
+  'app.signInErrorTitle': 'Google Sign-In Unavailable',
   'app.signOut': 'Sign Out',
   'app.playMatch': 'Play Match',
   'app.notifications': 'Notifications',
@@ -126,6 +127,9 @@ const EN_TRANSLATIONS = {
   'coach.suggestion2': 'Explain king opposition in pawn endgames.',
   'coach.suggestion3': 'What are the top 3 opening principles for 1200 Elo?',
   'coach.suggestion4': 'How do I spot knight forks faster during blitz?',
+  'coach.serverUnavailable':
+    'Chess Coach backend is unreachable or not published yet. Publish your AI Studio Shared App or set your server URL in Settings. Play Computer, Puzzles, Lessons, and Analysis work offline.',
+  'coach.openServerSettings': 'Configure Server URL in Settings',
 
   // SettingsView
   'settings.title': 'Profile & Board Customization',
@@ -172,6 +176,21 @@ const EN_TRANSLATIONS = {
   'timer.unlimited': 'Unlimited',
   'settings.savePreferences': 'Save Preferences',
   'settings.saving': 'Saving...',
+  'settings.serverSectionTitle': 'Backend Server Connection',
+  'settings.serverSectionDesc':
+    'Used for AI Chess Coach and Live Online Multiplayer. Publish the Shared App in AI Studio or enter your deployed server URL.',
+  'settings.serverUrlLabel': 'Server URL (https://...)',
+  'settings.serverSaveBtn': 'Save URL',
+  'settings.serverResetBtn': 'Reset Default',
+  'settings.serverTestBtn': 'Test Connection',
+  'settings.serverTesting': 'Testing...',
+  'settings.serverStatusConnected': 'Connected! AI Coach and Live Arena endpoints are online.',
+  'settings.serverStatusNotPublished':
+    'Server returned 404 — the Shared App URL is not published yet, or this host only serves static files.',
+  'settings.serverStatusUnreachable': 'Could not reach server. Check the URL and network connection.',
+  'settings.toastServerSaved': 'Backend server URL saved.',
+  'settings.toastServerReset': 'Backend server URL reset to default.',
+  'settings.serverInvalidUrl': 'Enter a valid http:// or https:// server URL.',
 
   // PlayOnlineView
   'online.disabled': 'Online multiplayer is temporarily disabled by the platform owner.',
@@ -534,6 +553,7 @@ const ES_TRANSLATIONS: TranslationDictionary = {
   'app.openProfileTitle': 'Abrir Mi Perfil e Historial de Rating',
   'app.signInGoogle': 'Iniciar sesión con Google',
   'app.signIn': 'Iniciar sesión',
+  'app.signInErrorTitle': 'Inicio de sesión con Google no disponible',
   'app.signOut': 'Cerrar sesión',
   'app.playMatch': 'Jugar Partida',
   'app.notifications': 'Notificaciones',
@@ -622,6 +642,9 @@ const ES_TRANSLATIONS: TranslationDictionary = {
   'coach.suggestion2': 'Explica la oposición de reyes en finales de peones.',
   'coach.suggestion3': '¿Cuáles son los 3 principios clave de apertura para 1200 Elo?',
   'coach.suggestion4': '¿Cómo detectar horquillas de caballo más rápido en blitz?',
+  'coach.serverUnavailable':
+    'El servidor del Entrenador no está disponible o aún no está publicado. Publica la app compartida en AI Studio o configura la URL del servidor en Ajustes. Jugar vs. Computadora, Problemas, Lecciones y Análisis funcionan sin conexión.',
+  'coach.openServerSettings': 'Configurar URL del Servidor en Ajustes',
 
   // SettingsView
   'settings.title': 'Personalización de Perfil y Tablero',
@@ -668,6 +691,21 @@ const ES_TRANSLATIONS: TranslationDictionary = {
   'timer.unlimited': 'Ilimitado',
   'settings.savePreferences': 'Guardar Preferencias',
   'settings.saving': 'Guardando...',
+  'settings.serverSectionTitle': 'Conexión del Servidor Backend',
+  'settings.serverSectionDesc':
+    'Necesario para el Entrenador IA y Multijugador en Línea. Publica la app compartida en AI Studio o indica tu URL desplegada.',
+  'settings.serverUrlLabel': 'URL del Servidor (https://...)',
+  'settings.serverSaveBtn': 'Guardar URL',
+  'settings.serverResetBtn': 'Restablecer',
+  'settings.serverTestBtn': 'Probar Conexión',
+  'settings.serverTesting': 'Probando...',
+  'settings.serverStatusConnected': '¡Conectado! El Entrenador IA y la Arena en Vivo están en línea.',
+  'settings.serverStatusNotPublished':
+    'El servidor devolvió 404: la app compartida aún no está publicada o el host no tiene API activa.',
+  'settings.serverStatusUnreachable': 'No se pudo conectar al servidor. Verifica la URL y tu red.',
+  'settings.toastServerSaved': 'URL del servidor guardada.',
+  'settings.toastServerReset': 'URL del servidor restablecida.',
+  'settings.serverInvalidUrl': 'Introduce una URL válida con http:// o https://.',
 
   // PlayOnlineView
   'online.disabled': 'El multijugador en línea está desactivado temporalmente por el propietario.',
@@ -1027,6 +1065,7 @@ const FR_TRANSLATIONS: TranslationDictionary = {
   'app.openProfileTitle': 'Ouvrir Mon Profil & Historique Elo',
   'app.signInGoogle': 'Connexion avec Google',
   'app.signIn': 'Connexion',
+  'app.signInErrorTitle': 'Connexion Google indisponible',
   'app.signOut': 'Déconnexion',
   'app.playMatch': 'Jouer',
   'app.notifications': 'Notifications',
@@ -1115,6 +1154,9 @@ const FR_TRANSLATIONS: TranslationDictionary = {
   'coach.suggestion2': 'Explique l’opposition des rois en finale de pions.',
   'coach.suggestion3': 'Quels sont les 3 principes d’ouverture à 1200 Elo ?',
   'coach.suggestion4': 'Comment repérer plus vite les fourchettes de cavalier en blitz ?',
+  'coach.serverUnavailable':
+    'Le serveur du Coach est inaccessible ou non publié. Publiez l’application partagée dans AI Studio ou configurez l’URL du serveur dans Paramètres. L’Ordinateur, les Problèmes, les Leçons et l’Analyse fonctionnent hors ligne.',
+  'coach.openServerSettings': 'Configurer l’URL du serveur dans Paramètres',
 
   // SettingsView
   'settings.title': 'Personnalisation du Profil & Échiquier',
@@ -1161,6 +1203,21 @@ const FR_TRANSLATIONS: TranslationDictionary = {
   'timer.unlimited': 'Illimité',
   'settings.savePreferences': 'Enregistrer les Préférences',
   'settings.saving': 'Enregistrement...',
+  'settings.serverSectionTitle': 'Connexion Serveur Backend',
+  'settings.serverSectionDesc':
+    'Utilisé pour le Coach IA et le Multijoueur en Ligne. Publiez l’application partagée AI Studio ou saisissez l’URL de votre serveur.',
+  'settings.serverUrlLabel': 'URL du Serveur (https://...)',
+  'settings.serverSaveBtn': 'Enregistrer',
+  'settings.serverResetBtn': 'Réinitialiser',
+  'settings.serverTestBtn': 'Tester la Connexion',
+  'settings.serverTesting': 'Test...',
+  'settings.serverStatusConnected': 'Connecté ! Le Coach IA et l’Arène en ligne sont opérationnels.',
+  'settings.serverStatusNotPublished':
+    'Erreur 404 — l’application partagée n’est pas encore publiée ou ce serveur est statique.',
+  'settings.serverStatusUnreachable': 'Serveur inaccessible. Vérifiez l’URL et votre connexion.',
+  'settings.toastServerSaved': 'URL du serveur enregistrée.',
+  'settings.toastServerReset': 'URL du serveur réinitialisée.',
+  'settings.serverInvalidUrl': 'Saisissez une URL valide en http:// ou https://.',
 
   // PlayOnlineView
   'online.disabled': 'Le multijugador en ligne est temporairement désactivé par le propriétaire.',
@@ -1520,6 +1577,7 @@ const AR_TRANSLATIONS: TranslationDictionary = {
   'app.openProfileTitle': 'فتح ملفي الشخصي وسجل التصنيف',
   'app.signInGoogle': 'تسجيل الدخول عبر Google',
   'app.signIn': 'تسجيل الدخول',
+  'app.signInErrorTitle': 'تعذر تسجيل الدخول عبر Google',
   'app.signOut': 'تسجيل الخروج',
   'app.playMatch': 'ابدأ مباراة',
   'app.notifications': 'الإشعارات',
@@ -1608,6 +1666,9 @@ const AR_TRANSLATIONS: TranslationDictionary = {
   'coach.suggestion2': 'اشرح قاعدة تقابل الملوك في نهايات البيادق.',
   'coach.suggestion3': 'ما أهم 3 مبادئ للافتتاح في تصنيف 1200؟',
   'coach.suggestion4': 'كيف أكتشف شوكات الحصان بسرعة في البليتز؟',
+  'coach.serverUnavailable':
+    'خادم مدرب الشطرنج غير متاح أو لم يُنشر بعد. انشر التطبيق المشارك في AI Studio أو اضبط رابط الخادم في الإعدادات. اللعب ضد الكمبيوتر والألغاز والدروس والتحليل تعمل بدون اتصال.',
+  'coach.openServerSettings': 'ضبط رابط الخادم في الإعدادات',
 
   // SettingsView
   'settings.title': 'تخصيص الملف الشخصي والرقعة',
@@ -1654,6 +1715,21 @@ const AR_TRANSLATIONS: TranslationDictionary = {
   'timer.unlimited': 'غير محدود',
   'settings.savePreferences': 'حفظ التفضيلات',
   'settings.saving': 'جاري الحفظ...',
+  'settings.serverSectionTitle': 'اتصال خادم الواجهة الخلفية',
+  'settings.serverSectionDesc':
+    'يُستخدم لمدرب الشطرنج بالذكاء الاصطناعي واللعب المباشر أونلاين. انشر التطبيق المشارك في AI Studio أو أدخل رابط الخادم المنشور.',
+  'settings.serverUrlLabel': 'رابط الخادم (https://...)',
+  'settings.serverSaveBtn': 'حفظ الرابط',
+  'settings.serverResetBtn': 'استعادة الافتراضي',
+  'settings.serverTestBtn': 'اختبار الاتصال',
+  'settings.serverTesting': 'جاري الاختبار...',
+  'settings.serverStatusConnected': 'متصل! خدمات المدرب الذكي واللعب المباشر تعمل الآن.',
+  'settings.serverStatusNotPublished':
+    'أرجع الخادم 404 — رابط التطبيق المشارك غير منشور بعد أو أن هذا الخادم لا يشغّل الواجهة الخلفية.',
+  'settings.serverStatusUnreachable': 'تعذر الوصول إلى الخادم. تحقق من الرابط واتصال الشبكة.',
+  'settings.toastServerSaved': 'تم حفظ رابط الخادم.',
+  'settings.toastServerReset': 'تمت استعادة رابط الخادم الافتراضي.',
+  'settings.serverInvalidUrl': 'أدخل رابط خادم صالح يبدأ بـ http:// أو https://.',
 
   // PlayOnlineView
   'online.disabled': 'تم تعطيل اللعب أونلاين مؤقتاً من قبل مالك المنصة.',

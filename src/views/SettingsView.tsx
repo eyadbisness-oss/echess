@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Check, Clock, Globe, Palette, Save, Settings as SettingsIcon, Volume2, VolumeX } from 'lucide-react';
+import { Check, Clock, Globe, Palette, Save, Server, Settings as SettingsIcon, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { ChessBoard } from '../components/ChessBoard';
@@ -8,6 +8,13 @@ import { BOARD_THEMES, PIECE_STYLES } from '../data/boardThemes';
 import { LOCALE_OPTIONS } from '../i18n/translations';
 import type { AppLocale, PieceStyleId } from '../shared/chessTypes';
 import { soundEngine } from '../utils/sound';
+import {
+  getBackendOrigin,
+  getCustomBackendOrigin,
+  getDefaultNativeBackendUrl,
+  sanitizeBackendUrl,
+  setCustomBackendOrigin,
+} from '../utils/backendUrl';
 import {
   LOW_TIME_COLOR_PRESETS,
   persistLocalWarningColor,
@@ -39,6 +46,11 @@ export function SettingsView() {
   const [previewLowTime, setPreviewLowTime] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedToast, setSavedToast] = useState<string | null>(null);
+  const [serverUrlInput, setServerUrlInput] = useState(() => getCustomBackendOrigin() || getBackendOrigin());
+  const [serverCheckState, setServerCheckState] = useState<{
+    status: 'idle' | 'testing' | 'ok' | 'not-published' | 'error';
+    detail?: string;
+  }>({ status: 'idle' });
 
   useEffect(() => {
     if (!profile) return;
@@ -140,6 +152,63 @@ export function SettingsView() {
       setSavedToast(t('settings.toastSaved'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveServerUrl = () => {
+    const clean = sanitizeBackendUrl(serverUrlInput);
+    if (!clean) {
+      setServerCheckState({ status: 'error', detail: t('settings.serverInvalidUrl') });
+      return;
+    }
+    setCustomBackendOrigin(clean);
+    setServerUrlInput(clean);
+    setServerCheckState({ status: 'idle' });
+    setSavedToast(t('settings.toastServerSaved'));
+  };
+
+  const handleResetServerUrl = () => {
+    setCustomBackendOrigin('');
+    const nextOrigin = getBackendOrigin() || getDefaultNativeBackendUrl();
+    setServerUrlInput(nextOrigin);
+    setServerCheckState({ status: 'idle' });
+    setSavedToast(t('settings.toastServerReset'));
+  };
+
+  const handleTestServerConnection = async () => {
+    const targetOrigin = sanitizeBackendUrl(serverUrlInput) || getBackendOrigin();
+    if (!targetOrigin) {
+      setServerCheckState({ status: 'error', detail: t('settings.serverInvalidUrl') });
+      return;
+    }
+    setServerCheckState({ status: 'testing' });
+    try {
+      const res = await fetch(`${targetOrigin}/api/health`, { method: 'GET' });
+      const raw = await res.text();
+      let json: { ok?: boolean } | null = null;
+      try {
+        json = raw ? (JSON.parse(raw) as { ok?: boolean }) : null;
+      } catch {
+        json = null;
+      }
+      if (res.ok && json?.ok) {
+        setServerCheckState({ status: 'ok', detail: t('settings.serverStatusConnected') });
+      } else if (res.status === 404 || raw.trimStart().startsWith('<')) {
+        setServerCheckState({
+          status: 'not-published',
+          detail: t('settings.serverStatusNotPublished'),
+        });
+      } else {
+        setServerCheckState({
+          status: 'error',
+          detail: t('settings.serverStatusUnreachable'),
+        });
+      }
+    } catch {
+      setServerCheckState({
+        status: 'error',
+        detail: t('settings.serverStatusUnreachable'),
+      });
     }
   };
 
@@ -278,10 +347,11 @@ export function SettingsView() {
           </div>
         </div>
 
-        {/* Profile & Gameplay Settings Form */}
+        {/* Profile, Gameplay & Server Connection Column */}
+        <div className="lg:col-span-5 space-y-6">
         <form
           onSubmit={handleSaveProfile}
-          className="lg:col-span-5 bg-[#12171E] border border-slate-800 rounded-xl p-5 space-y-4"
+          className="bg-[#12171E] border border-slate-800 rounded-xl p-5 space-y-4"
         >
           <h2 className="font-display text-base font-semibold text-slate-100">
             {t('settings.accountSettingsTitle')}
@@ -557,6 +627,75 @@ export function SettingsView() {
             {saving ? t('settings.saving') : t('settings.savePreferences')}
           </button>
         </form>
+
+        {/* Backend Server Connection (AI Coach & Live Multiplayer) */}
+        <section className="bg-[#12171E] border border-slate-800 rounded-xl p-5 space-y-3.5">
+          <div className="flex items-start gap-2.5">
+            <Server className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <h2 className="font-display text-sm font-semibold text-slate-100">
+                {t('settings.serverSectionTitle')}
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                {t('settings.serverSectionDesc')}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="echess-backend-url" className="text-xs text-slate-400">
+              {t('settings.serverUrlLabel')}
+            </label>
+            <input
+              id="echess-backend-url"
+              type="url"
+              value={serverUrlInput}
+              onChange={(e) => setServerUrlInput(e.target.value)}
+              placeholder={getDefaultNativeBackendUrl()}
+              className="w-full bg-[#0B0E11] border border-slate-800 focus:border-emerald-500 rounded-lg px-3 py-2 text-xs text-slate-100 font-mono focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSaveServerUrl}
+              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition-colors"
+            >
+              {t('settings.serverSaveBtn')}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleTestServerConnection()}
+              disabled={serverCheckState.status === 'testing'}
+              className="px-3 py-1.5 rounded-lg bg-[#1A212B] hover:bg-[#232C39] border border-slate-700 text-slate-100 text-xs font-medium disabled:opacity-50 transition-colors"
+            >
+              {serverCheckState.status === 'testing'
+                ? t('settings.serverTesting')
+                : t('settings.serverTestBtn')}
+            </button>
+            <button
+              type="button"
+              onClick={handleResetServerUrl}
+              className="px-3 py-1.5 rounded-lg bg-[#0B0E11] hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium transition-colors"
+            >
+              {t('settings.serverResetBtn')}
+            </button>
+          </div>
+
+          {serverCheckState.status !== 'idle' && serverCheckState.detail && (
+            <div
+              className={`rounded-lg px-3 py-2 text-xs border ${
+                serverCheckState.status === 'ok'
+                  ? 'bg-emerald-950/40 border-emerald-700/60 text-emerald-200'
+                  : 'bg-amber-950/40 border-amber-700/60 text-amber-200'
+              }`}
+            >
+              {serverCheckState.detail}
+            </div>
+          )}
+        </section>
+        </div>
       </div>
     </div>
   );

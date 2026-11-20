@@ -9,7 +9,11 @@ interface ChatMessage {
   text?: string;
 }
 
-export function GeminiChessCoach() {
+interface GeminiChessCoachProps {
+  onOpenSettings?: () => void;
+}
+
+export function GeminiChessCoach({ onOpenSettings }: GeminiChessCoachProps) {
   const { t } = useLocale();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -55,13 +59,32 @@ export function GeminiChessCoach() {
           })),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Could not reach Chess Coach.');
+      const rawText = await res.text();
+      let data: { reply?: string; error?: string } | null = null;
+      try {
+        data = rawText ? (JSON.parse(rawText) as { reply?: string; error?: string }) : null;
+      } catch {
+        data = null;
+      }
+      if (!res.ok || !data || typeof data.reply !== 'string') {
+        const isHtmlOrNotFound =
+          res.status === 404 ||
+          res.status === 502 ||
+          res.status === 503 ||
+          rawText.trimStart().startsWith('<');
+        if (isHtmlOrNotFound) {
+          throw new Error(t('coach.serverUnavailable'));
+        }
+        throw new Error(data?.error || t('coach.serverUnavailable'));
       }
       setMessages((prev) => [...prev, { role: 'model', text: data.reply }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to send message.');
+      const msg = err instanceof Error ? err.message : '';
+      if (!msg || msg.toLowerCase().includes('failed to fetch') || msg.toLowerCase().includes('networkerror')) {
+        setError(t('coach.serverUnavailable'));
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -131,8 +154,17 @@ export function GeminiChessCoach() {
           </div>
         )}
         {error && (
-          <div className="text-xs text-rose-400 bg-rose-950/30 border border-rose-900/50 rounded-lg px-3 py-2">
-            {error}
+          <div className="text-xs text-rose-300 bg-rose-950/35 border border-rose-900/60 rounded-lg px-3 py-2.5 space-y-1.5">
+            <p className="leading-relaxed">{error}</p>
+            {onOpenSettings && (
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="text-emerald-400 hover:underline font-semibold"
+              >
+                {t('coach.openServerSettings')}
+              </button>
+            )}
           </div>
         )}
         <div ref={bottomRef} />

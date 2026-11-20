@@ -323,8 +323,22 @@ export function MultiplayerProvider({ children }: { children: React.ReactNode })
 
     connect();
 
+    const handleBackendChanged = () => {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      if (wsRef.current) {
+        wsRef.current.close();
+      } else {
+        void connect();
+      }
+    };
+    window.addEventListener('echess-backend-url-changed', handleBackendChanged);
+
     return () => {
       closedByCleanup = true;
+      window.removeEventListener('echess-backend-url-changed', handleBackendChanged);
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (wsRef.current) {
         wsRef.current.close();

@@ -1,6 +1,10 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import {
+  GoogleAuthProvider,
   onAuthStateChanged,
+  signInWithCredential,
   signInWithPopup,
   signOut,
   type User,
@@ -49,6 +53,8 @@ interface AuthContextValue {
   platformConfig: PlatformConfig;
   notifications: NotificationItem[];
   unreadNotifications: number;
+  authError: string | null;
+  clearAuthError: () => void;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updatePreferences: (patch: {
@@ -100,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ownerCheatModeState, setOwnerCheatModeState] = useState(false);
   const [platformConfig, setPlatformConfig] = useState<PlatformConfig>(DEFAULT_PLATFORM_CONFIG);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [recentUnlockedBadges, setRecentUnlockedBadges] = useState<AchievementDefinition[]>([]);
   const prevAchievementsRef = useRef<{ uid: string; ids: Set<string> } | null>(null);
 
@@ -132,8 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
       if (!user) {
+        setFirebaseUser(null);
         setProfile(null);
         setOwnerVerifiedServer(false);
         setNotifications([]);
@@ -144,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // Server-side Owner Role Verification (never relies on client state alone)
         const token = await user.getIdToken();
+        setFirebaseUser(user);
         try {
           const res = await fetch(apiUrl('/api/owner/verify'), {
             method: 'POST',
@@ -263,7 +271,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (err) {
-        console.error('Auth bootstrap warning:', err);
+        const msg = err instanceof Error ? err.message : String(err);
+        const lower = msg.toLowerCase();
+        if (
+          lower.includes('permission-denied') ||
+          lower.includes('suspended') ||
+          lower.includes('user-disabled') ||
+          lower.includes('user-token-expired')
+        ) {
+          setFirebaseUser(null);
+          setProfile(null);
+          setOwnerVerifiedServer(false);
+          setNotifications([]);
+          setAuthError(
+            'Firebase Auth & Firestore for project echess-fd9af returned PERMISSION_DENIED. Check your Firebase project status and Firestore rules. Offline Stockfish games, Puzzles, Lessons, and Analysis still work.'
+          );
+          try {
+            await signOut(auth);
+          } catch {
+            // ignore signOut failure when token service is blocked
+          }
+        } else {
+          console.error('Auth bootstrap warning:', err);
+        }
       } finally {
         setIsAuthReady(true);
       }
@@ -349,8 +379,75 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [isAuthReady, firebaseUser]);
 
+  const clearAuthError = useCallback(() => {
+    setAuthError(null);
+  }, []);
+
   const signInWithGoogle = useCallback(async () => {
-    await signInWithPopup(auth, googleProvider);
+    setAuthError(null);
+    try {
+      if (Capacitor.isNativePlatform()) {
+        let result;
+        try {
+          result = await FirebaseAuthentication.signInWithGoogle({
+            useCredentialManager: true,
+          });
+        } catch (credErr) {
+          const credMsg = credErr instanceof Error ? credErr.message : String(credErr);
+          const lower = credMsg.toLowerCase();
+          if (lower.includes('cancel') || lower.includes('12501')) {
+            return;
+          }
+          // Fallback to legacy GoogleSignIn intent if Credential Manager fails
+          result = await FirebaseAuthentication.signInWithGoogle({
+            useCredentialManager: false,
+          });
+        }
+        const idToken = result?.credential?.idToken;
+        if (!idToken) {
+          throw new Error('Google Sign-In did not return an ID token.');
+        }
+        const credential = GoogleAuthProvider.credential(idToken);
+        await signInWithCredential(auth, credential);
+        return;
+      }
+
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      const rawMsg = err instanceof Error ? err.message : String(err);
+      const lower = rawMsg.toLowerCase();
+      if (
+        lower.includes('popup-closed-by-user') ||
+        lower.includes('cancelled-popup-request') ||
+        lower.includes('cancel') ||
+        lower.includes('12501')
+      ) {
+        return;
+      }
+      if (
+        lower.includes('permission-denied') ||
+        lower.includes('suspended')
+      ) {
+        setAuthError(
+          'Firebase Auth for project echess-fd9af returned PERMISSION_DENIED. Check Google Sign-In and Authorized Domains in Firebase Console. Offline modes remain available.'
+        );
+        return;
+      }
+      if (
+        rawMsg.includes('10:') ||
+        lower.includes('developer_error') ||
+        lower.includes('nocredential') ||
+        lower.includes('no credentials available') ||
+        rawMsg.includes('12500') ||
+        lower.includes('default_web_client_id')
+      ) {
+        setAuthError(
+          'Android Google Sign-In requires package com.echess.app (SHA-1: 10:C6:AA:41:78:90:5B:C5:09:BE:1A:C7:17:08:A0:1E:64:3B:AB:74) to be authorized in your Firebase project. Play Computer, Puzzles, Lessons, and Analysis work without signing in.'
+        );
+        return;
+      }
+      setAuthError(rawMsg || 'Unable to complete Google Sign-In.');
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -363,6 +460,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
       } catch {
         // ignore
+      }
+    }
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await FirebaseAuthentication.signOut();
+      } catch {
+        // ignore native signOut errors
       }
     }
     await signOut(auth);
@@ -466,6 +570,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         platformConfig,
         notifications,
         unreadNotifications,
+        authError,
+        clearAuthError,
         signInWithGoogle,
         logout,
         updatePreferences,

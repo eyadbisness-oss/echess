@@ -2,8 +2,58 @@ import { Capacitor } from '@capacitor/core';
 
 const DEFAULT_NATIVE_BACKEND_URL =
   'https://ais-pre-a7nojfgqtue6z54w7ypmif-741640521343.europe-west1.run.app';
+const BACKEND_URL_STORAGE_KEY = 'echess_backend_url';
+
+export function getDefaultNativeBackendUrl(): string {
+  return DEFAULT_NATIVE_BACKEND_URL;
+}
+
+export function sanitizeBackendUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return '';
+    }
+    return parsed.origin;
+  } catch {
+    return '';
+  }
+}
+
+export function getCustomBackendOrigin(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    const saved = window.localStorage.getItem(BACKEND_URL_STORAGE_KEY) || '';
+    return sanitizeBackendUrl(saved);
+  } catch {
+    return '';
+  }
+}
+
+export function setCustomBackendOrigin(rawUrl: string): string {
+  const clean = sanitizeBackendUrl(rawUrl);
+  if (typeof window !== 'undefined') {
+    try {
+      if (clean) {
+        window.localStorage.setItem(BACKEND_URL_STORAGE_KEY, clean);
+      } else {
+        window.localStorage.removeItem(BACKEND_URL_STORAGE_KEY);
+      }
+      window.dispatchEvent(new Event('echess-backend-url-changed'));
+    } catch {
+      // ignore storage failure
+    }
+  }
+  return clean;
+}
 
 export function getBackendOrigin(): string {
+  const custom = getCustomBackendOrigin();
+  if (custom) {
+    return custom;
+  }
   const configured = (import.meta.env.VITE_BACKEND_URL as string | undefined)?.trim();
   if (configured) {
     return configured.replace(/\/+$/, '');
@@ -19,7 +69,11 @@ export function getBackendOrigin(): string {
 
 export function apiUrl(path: string): string {
   const normalized = path.startsWith('/') ? path : `/${path}`;
-  if (Capacitor.isNativePlatform() || (import.meta.env.VITE_BACKEND_URL as string | undefined)?.trim()) {
+  if (
+    getCustomBackendOrigin() ||
+    Capacitor.isNativePlatform() ||
+    (import.meta.env.VITE_BACKEND_URL as string | undefined)?.trim()
+  ) {
     return `${getBackendOrigin()}${normalized}`;
   }
   return normalized;

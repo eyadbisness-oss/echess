@@ -148,47 +148,45 @@ export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
 
             <div className="flex flex-wrap items-center gap-3">
               {firebaseUser ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('play-online')}
-                    className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
-                  >
-                    <Swords className="w-4 h-4" />
-                    {t('nav.playOnline')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('play-computer')}
-                    className="px-5 py-2.5 rounded-lg bg-[#1A212B] hover:bg-[#232C39] border border-slate-700 text-slate-100 text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
-                  >
-                    <Cpu className="w-4 h-4 text-emerald-400" />
-                    {t('nav.playComputer')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('puzzles')}
-                    className="px-4 py-2.5 rounded-lg bg-[#1A212B] hover:bg-[#232C39] border border-slate-700 text-slate-200 text-sm font-medium inline-flex items-center gap-2 transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
-                  >
-                    <Puzzle className="w-4 h-4 text-amber-400" />
-                    {t('home.dailyPuzzle')}
-                    {(profile?.dailyStreak || 0) > 0 && (
-                      <span className="font-mono text-xs text-amber-400 tabular-nums">
-                        · {profile?.dailyStreak}{t('app.daysShort')}
-                      </span>
-                    )}
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('play-online')}
+                  className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
+                >
+                  <Swords className="w-4 h-4" />
+                  {t('nav.playOnline')}
+                </button>
               ) : (
                 <button
                   type="button"
                   onClick={signInWithGoogle}
-                  className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,transform] duration-150 active:scale-[0.97]"
+                  className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
                 >
                   {t('home.signInToPlay')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => onNavigate('play-computer')}
+                className="px-5 py-2.5 rounded-lg bg-[#1A212B] hover:bg-[#232C39] border border-slate-700 text-slate-100 text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
+              >
+                <Cpu className="w-4 h-4 text-emerald-400" />
+                {t('nav.playComputer')}
+              </button>
+              <button
+                type="button"
+                onClick={() => onNavigate('puzzles')}
+                className="px-4 py-2.5 rounded-lg bg-[#1A212B] hover:bg-[#232C39] border border-slate-700 text-slate-200 text-sm font-medium inline-flex items-center gap-2 transition-[background-color,border-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
+              >
+                <Puzzle className="w-4 h-4 text-amber-400" />
+                {t('home.dailyPuzzle')}
+                {(profile?.dailyStreak || 0) > 0 && (
+                  <span className="font-mono text-xs text-amber-400 tabular-nums">
+                    · {profile?.dailyStreak}{t('app.daysShort')}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -196,7 +194,7 @@ export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
         {/* Home-Only Gemini Chess Coach */}
         <div className="lg:col-span-5">
           {platformConfig.features.geminiCoach ? (
-            <GeminiChessCoach />
+            <GeminiChessCoach onOpenSettings={() => onNavigate('settings')} />
           ) : (
             <div className="h-full bg-[#12171E] border border-slate-800 rounded-xl p-6 flex items-center justify-center text-sm text-slate-400">
               {t('home.coachPaused')}

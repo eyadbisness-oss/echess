@@ -59,6 +59,8 @@ function AppShell() {
     unreadNotifications,
     recentUnlockedBadges,
     dismissUnlockedBadge,
+    authError,
+    clearAuthError,
     signInWithGoogle,
     logout,
     updatePreferences,
@@ -536,6 +538,25 @@ function AppShell() {
 
         {/* Active View Content */}
         <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+          {authError && (
+            <div
+              role="alert"
+              className="max-w-[1360px] mx-auto mb-4 bg-rose-950/50 border border-rose-700/70 rounded-xl px-4 py-3 flex items-start justify-between gap-3 text-xs text-rose-100"
+            >
+              <div className="space-y-1">
+                <p className="font-semibold text-rose-200">{t('app.signInErrorTitle')}</p>
+                <p className="text-rose-200/90 leading-relaxed">{authError}</p>
+              </div>
+              <button
+                type="button"
+                onClick={clearAuthError}
+                className="p-1 rounded-lg text-rose-300 hover:text-white hover:bg-rose-900/50 shrink-0"
+                aria-label={t('common.dismiss')}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <div key={view} className="animate-menu-view">
             {view === 'home' && <HomeView onNavigate={setView} onOpenReview={openReview} />}
             {view === 'play-online' && <PlayOnlineView onOpenReview={openReview} />}
