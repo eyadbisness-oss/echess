@@ -89,7 +89,6 @@ const DEFAULT_PLATFORM_CONFIG: PlatformConfig = {
     puzzles: true,
     lessons: true,
     openingExplorer: true,
-    geminiCoach: true,
     tournaments: true,
   },
   activeTimeControls: ['1+0', '2+1', '3+0', '3+2', '5+0', '10+0', '15+10', '30+0'],

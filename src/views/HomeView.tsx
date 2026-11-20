@@ -15,7 +15,6 @@ import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocale } from '../contexts/LocaleContext';
 import { useMultiplayer } from '../contexts/MultiplayerContext';
-import { GeminiChessCoach } from '../components/GeminiChessCoach';
 import { ACHIEVEMENTS } from '../data/achievements';
 import type { ChessGameRecord } from '../shared/chessTypes';
 
@@ -122,9 +121,8 @@ export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
         </div>
       )}
 
-      {/* Hero Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <div className="lg:col-span-7 relative rounded-xl overflow-hidden border border-slate-800 bg-[#12171E] flex flex-col justify-between min-h-[340px]">
+      {/* Hero Banner */}
+      <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-[#12171E] flex flex-col justify-between min-h-[300px] sm:min-h-[340px]">
           <img
             src="/src/assets/images/echess_hero_arena_1795034539444.jpg"
             alt="eChess tournament board"
@@ -134,7 +132,7 @@ export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E11] via-[#0B0E11]/75 to-transparent" />
 
           <div className="relative z-10 p-6 sm:p-8 flex flex-col justify-end h-full space-y-5">
-            <div className="space-y-2 max-w-xl">
+            <div className="space-y-2 max-w-2xl">
               <p className="text-xs font-medium text-emerald-400 tracking-wide">
                 {t('home.heroEyebrow')}
               </p>
@@ -189,18 +187,6 @@ export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Home-Only Gemini Chess Coach */}
-        <div className="lg:col-span-5">
-          {platformConfig.features.geminiCoach ? (
-            <GeminiChessCoach onOpenSettings={() => onNavigate('settings')} />
-          ) : (
-            <div className="h-full bg-[#12171E] border border-slate-800 rounded-xl p-6 flex items-center justify-center text-sm text-slate-400">
-              {t('home.coachPaused')}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Rating & Telemetry Strip */}

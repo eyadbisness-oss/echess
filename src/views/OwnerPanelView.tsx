@@ -1002,12 +1002,14 @@ export function OwnerPanelView() {
 
             <div className="space-y-2 pt-2 border-t border-slate-800">
               <p className="text-xs font-semibold text-slate-300">Feature Toggles</p>
-              {(Object.keys(features) as (keyof PlatformFeatures)[]).map((fk) => (
+              {(Object.keys(features) as (keyof PlatformFeatures)[])
+                .filter((fk) => fk !== 'geminiCoach')
+                .map((fk) => (
                 <label key={fk} className="flex items-center justify-between text-xs text-slate-200 py-1">
                   <span className="capitalize">{fk.replace(/([A-Z])/g, ' $1')}</span>
                   <input
                     type="checkbox"
-                    checked={features[fk]}
+                    checked={Boolean(features[fk])}
                     onChange={(e) => setFeatures((prev) => ({ ...prev, [fk]: e.target.checked }))}
                     className="accent-emerald-500 w-4 h-4"
                   />

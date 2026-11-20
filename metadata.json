@@ -1,6 +1,5 @@
 {
   "name": "eChess",
-  "description": "eChess — Play. Learn. Dominate. Complete online chess platform with Stockfish 19 WASM analysis, automatic move classification, real-time multiplayer, puzzles, lessons, custom board themes, and Gemini chess coaching.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "description": "eChess — Play. Learn. Dominate. Complete online chess platform with Stockfish 19 WASM analysis, automatic move classification, real-time multiplayer, puzzles, lessons, and custom board themes.",
+  "requestFramePermissions": []
 }

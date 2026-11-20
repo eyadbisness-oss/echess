@@ -6,7 +6,6 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { WebSocketServer, WebSocket } from 'ws';
 import { Chess } from 'chess.js';
-import { GoogleGenAI } from '@google/genai';
 import { initializeApp, getApps, getApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { calculateGlicko2Update } from './src/shared/glicko2.ts';
@@ -26,15 +25,6 @@ const adminApp = getApps().length
 const adminAuth = getAuth(adminApp);
 
 const OWNER_EMAIL = (process.env.OWNER_EMAIL || 'eyadbisness@gmail.com').toLowerCase();
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      'User-Agent': 'aistudio-build',
-    },
-  },
-});
 
 const PORT = Number(process.env.PORT || 3000);
 
@@ -306,51 +296,6 @@ async function startServer() {
       activeGames: Array.from(liveRooms.values()).filter((r) => r.status === 'active').length,
       queueSize: matchmakingQueue.length,
     });
-  });
-
-  // Gemini Chess Coach Chatbot API (Home Menu Only)
-  app.post('/api/gemini/chat', async (req, res) => {
-    try {
-      const { message, history } = req.body as {
-        message?: string;
-        history?: { role: 'user' | 'model'; text: string }[];
-      };
-
-      if (!message || typeof message !== 'string' || !message.trim()) {
-        res.status(400).json({ error: 'A chess question is required.' });
-        return;
-      }
-
-      if (!process.env.GEMINI_API_KEY) {
-        res.status(503).json({ error: 'Gemini API key is not configured on the server.' });
-        return;
-      }
-
-      const conversationContext = (history || [])
-        .slice(-8)
-        .map((h) => `${h.role === 'user' ? 'Player' : 'eChess Coach'}: ${h.text}`)
-        .join('\n');
-
-      const prompt = conversationContext
-        ? `${conversationContext}\nPlayer: ${message.trim()}`
-        : message.trim();
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-4-hydrogen',
-        contents: prompt,
-        config: {
-          systemInstruction:
-            'You are the eChess Grandmaster Coach in the Home menu of eChess. Answer questions concisely and clearly about chess openings, tactics, middlegame plans, endgame principles, chess rules, tournament psychology, and training habits. Use algebraic notation accurately. Keep answers practical and structured in under 220 words unless asked for deep detail.',
-        },
-      });
-
-      res.json({ reply: response.text || 'I could not formulate a response. Please try again.' });
-    } catch (err) {
-      console.error('Gemini Chess Coach error:', err);
-      res.status(500).json({
-        error: err instanceof Error ? err.message : 'Failed to reach Gemini Chess Coach.',
-      });
-    }
   });
 
   // Server-Side Owner Role Verification Middleware

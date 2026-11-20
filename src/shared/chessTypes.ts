@@ -177,7 +177,7 @@ export interface PlatformFeatures {
   puzzles: boolean;
   lessons: boolean;
   openingExplorer: boolean;
-  geminiCoach: boolean;
+  geminiCoach?: boolean;
   tournaments: boolean;
 }
 
