@@ -39,7 +39,7 @@ interface HomeViewProps {
 }
 
 export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
-  const { profile, firebaseUser, platformConfig, signInWithGoogle } = useAuth();
+  const { profile, firebaseUser, platformConfig, isSigningIn, signInWithGoogle } = useAuth();
   const { t } = useLocale();
   const { onlinePlayers, activeRoom } = useMultiplayer();
   const [recentGames, setRecentGames] = useState<ChessGameRecord[]>([]);
@@ -158,9 +158,10 @@ export function HomeView({ onNavigate, onOpenReview }: HomeViewProps) {
                 <button
                   type="button"
                   onClick={signInWithGoogle}
-                  className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
+                  disabled={isSigningIn}
+                  className="px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-sm font-semibold inline-flex items-center gap-2 transition-[background-color,transform] duration-150 active:scale-[0.97] whitespace-nowrap"
                 >
-                  {t('home.signInToPlay')}
+                  {isSigningIn ? '...' : t('home.signInToPlay')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )}

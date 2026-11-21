@@ -60,6 +60,7 @@ function AppShell() {
     recentUnlockedBadges,
     dismissUnlockedBadge,
     authError,
+    isSigningIn,
     clearAuthError,
     signInWithGoogle,
     logout,
@@ -305,10 +306,11 @@ function AppShell() {
             <button
               type="button"
               onClick={signInWithGoogle}
-              className="w-full py-2.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors"
+              disabled={isSigningIn}
+              className="w-full py-2.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-xs font-semibold inline-flex items-center justify-center gap-2 transition-colors"
             >
               <LogIn className="w-4 h-4" />
-              {t('app.signInGoogle')}
+              {isSigningIn ? '...' : t('app.signInGoogle')}
             </button>
           )}
         </div>
@@ -390,9 +392,10 @@ function AppShell() {
               <button
                 type="button"
                 onClick={signInWithGoogle}
-                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold whitespace-nowrap shrink-0 transition-[background-color,transform] duration-150 active:scale-[0.97]"
+                disabled={isSigningIn}
+                className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white text-xs font-semibold whitespace-nowrap shrink-0 transition-[background-color,transform] duration-150 active:scale-[0.97]"
               >
-                {t('app.signIn')}
+                {isSigningIn ? '...' : t('app.signIn')}
               </button>
             ) : (
               <button
@@ -536,16 +539,15 @@ function AppShell() {
           <div className="flex-1 bg-black/60 backdrop-blur-[1px]" onClick={() => setMobileMenuOpen(false)} />
         </div>
 
-        {/* Active View Content */}
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
-          {authError && (
+        {authError && (
+          <div className="sticky top-16 z-30 px-4 sm:px-6 pt-3">
             <div
               role="alert"
-              className="max-w-[1360px] mx-auto mb-4 bg-rose-950/50 border border-rose-700/70 rounded-xl px-4 py-3 flex items-start justify-between gap-3 text-xs text-rose-100"
+              className="max-w-[1360px] mx-auto bg-rose-950/95 border border-rose-700/80 rounded-xl px-4 py-3 flex items-start justify-between gap-3 text-xs text-rose-100 shadow-xl"
             >
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="font-semibold text-rose-200">{t('app.signInErrorTitle')}</p>
-                <p className="text-rose-200/90 leading-relaxed">{authError}</p>
+                <p className="text-rose-200/90 leading-relaxed break-words">{authError}</p>
               </div>
               <button
                 type="button"
@@ -556,7 +558,11 @@ function AppShell() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Active View Content */}
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
           <div key={view} className="animate-menu-view">
             {view === 'home' && <HomeView onNavigate={setView} onOpenReview={openReview} />}
             {view === 'play-online' && <PlayOnlineView onOpenReview={openReview} />}

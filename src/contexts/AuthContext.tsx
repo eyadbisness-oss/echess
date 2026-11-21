@@ -54,6 +54,7 @@ interface AuthContextValue {
   notifications: NotificationItem[];
   unreadNotifications: number;
   authError: string | null;
+  isSigningIn: boolean;
   clearAuthError: () => void;
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
@@ -106,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [platformConfig, setPlatformConfig] = useState<PlatformConfig>(DEFAULT_PLATFORM_CONFIG);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const [recentUnlockedBadges, setRecentUnlockedBadges] = useState<AchievementDefinition[]>([]);
   const prevAchievementsRef = useRef<{ uid: string; ids: Set<string> } | null>(null);
 
@@ -388,27 +390,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = useCallback(async () => {
     setAuthError(null);
+    setIsSigningIn(true);
     try {
       if (Capacitor.isNativePlatform()) {
         let result;
+        let legacyErrorMsg = '';
         try {
           result = await FirebaseAuthentication.signInWithGoogle({
             useCredentialManager: false,
           });
         } catch (legacyErr) {
-          const legacyMsg = legacyErr instanceof Error ? legacyErr.message : String(legacyErr);
-          const lower = legacyMsg.toLowerCase();
-          if (lower.includes('12501')) {
-            return;
-          }
+          legacyErrorMsg = legacyErr instanceof Error ? legacyErr.message : String(legacyErr);
           // Fallback to Android Credential Manager if legacy GoogleSignIn fails
-          result = await FirebaseAuthentication.signInWithGoogle({
-            useCredentialManager: true,
-          });
+          try {
+            result = await FirebaseAuthentication.signInWithGoogle({
+              useCredentialManager: true,
+            });
+          } catch (credErr) {
+            const credMsg = credErr instanceof Error ? credErr.message : String(credErr);
+            throw new Error(
+              `Native Sign-In failed. Legacy: ${legacyErrorMsg} | CredentialManager: ${credMsg} [Build 2026.11.21-auth2]`
+            );
+          }
         }
         const idToken = result?.credential?.idToken;
         if (!idToken) {
-          throw new Error('Google Sign-In did not return an ID token.');
+          throw new Error('Google Sign-In did not return an ID token. [Build 2026.11.21-auth2]');
         }
         const credential = GoogleAuthProvider.credential(idToken);
         const userCred = await signInWithCredential(auth, credential);
@@ -423,22 +430,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       const rawMsg = err instanceof Error ? err.message : String(err);
       const lower = rawMsg.toLowerCase();
-      const isExplicitCancel =
-        (lower.includes('popup-closed-by-user') ||
-          lower.includes('cancelled-popup-request') ||
-          lower.includes('12501') ||
-          lower.includes('activity is cancelled by the user') ||
-          lower.includes('user canceled') ||
-          lower.includes('user cancelled')) &&
-        !lower.includes('blocked') &&
-        !lower.includes('too many');
-      if (isExplicitCancel) {
+      if (
+        !Capacitor.isNativePlatform() &&
+        (lower.includes('popup-closed-by-user') || lower.includes('cancelled-popup-request'))
+      ) {
         return;
       }
-      if (
-        lower.includes('permission-denied') ||
-        lower.includes('suspended')
-      ) {
+      if (lower.includes('permission-denied') || lower.includes('suspended')) {
         setAuthError(
           'Firebase Auth for project echess-fd9af returned PERMISSION_DENIED. Check Google Sign-In and Authorized Domains in Firebase Console. Offline modes remain available.'
         );
@@ -453,11 +451,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         lower.includes('default_web_client_id')
       ) {
         setAuthError(
-          'Android Google Sign-In requires package com.echess.app (SHA-1: 10:C6:AA:41:78:90:5B:C5:09:BE:1A:C7:17:08:A0:1E:64:3B:AB:74) to be authorized in your Firebase project. Play Computer, Puzzles, Lessons, and Analysis work without signing in.'
+          `Android Google Sign-In configuration error (${rawMsg}). Check com.echess.app SHA-1 (10:C6:AA:41:78:90:5B:C5:09:BE:1A:C7:17:08:A0:1E:64:3B:AB:74) in Firebase project echess-fd9af. [Build 2026.11.21-auth2]`
         );
         return;
       }
-      setAuthError(rawMsg || 'Unable to complete Google Sign-In.');
+      setAuthError(rawMsg || 'Unable to complete Google Sign-In. [Build 2026.11.21-auth2]');
+    } finally {
+      setIsSigningIn(false);
     }
   }, []);
 
@@ -582,6 +582,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         notifications,
         unreadNotifications,
         authError,
+        isSigningIn,
         clearAuthError,
         signInWithGoogle,
         logout,
