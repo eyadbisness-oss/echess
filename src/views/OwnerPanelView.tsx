@@ -147,6 +147,7 @@ export function OwnerPanelView() {
   const [section, setSection] = useState<'overview' | 'users' | 'platform' | 'lab' | 'sandbox'>('overview');
 
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
+  const [localStockfishStatus, setLocalStockfishStatus] = useState<'checking' | 'ready' | 'error'>('checking');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [gamesCount, setGamesCount] = useState(0);
   const [gamesList, setGamesList] = useState<ChessGameRecord[]>([]);
@@ -250,6 +251,20 @@ export function OwnerPanelView() {
     fetchTelemetry();
     const tTimer = setInterval(fetchTelemetry, 8000);
 
+    let mounted = true;
+    stockfishService
+      .checkReady()
+      .then((ready) => {
+        if (mounted) {
+          setLocalStockfishStatus(ready ? 'ready' : 'error');
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setLocalStockfishStatus('error');
+        }
+      });
+
     const uUsers = onSnapshot(collection(db, 'users'), (snap) => {
       setUsers(snap.docs.map((d) => d.data() as UserProfile));
     }, () => {});
@@ -287,6 +302,7 @@ export function OwnerPanelView() {
     }, () => {});
 
     return () => {
+      mounted = false;
       clearInterval(tTimer);
       uUsers();
       uGames();
@@ -771,8 +787,16 @@ export function OwnerPanelView() {
               { label: 'Completed Games', val: gamesCount },
               { label: 'Open Reports', val: reports.filter((r) => r.status === 'open').length },
               { label: 'Matchmaking Queue', val: telemetry?.matchmakingQueue ?? 0 },
-              { label: 'Server Memory (MB)', val: telemetry?.memoryMb ?? 0 },
-              { label: 'Stockfish WASM', val: telemetry?.stockfishAssetPresent ? 'Ready' : 'Missing' },
+              { label: 'Server Memory (MB)', val: telemetry ? telemetry.memoryMb : 'Offline' },
+              {
+                label: 'Stockfish WASM',
+                val:
+                  localStockfishStatus === 'ready' || telemetry?.stockfishAssetPresent
+                    ? 'Ready'
+                    : localStockfishStatus === 'checking'
+                      ? 'Checking...'
+                      : 'Missing',
+              },
             ].map((stat) => (
               <div key={stat.label} className="bg-[#12171E] border border-slate-800 rounded-xl p-4">
                 <p className="text-xs text-slate-400">{stat.label}</p>
